@@ -1,0 +1,1352 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "¡Hola Alejandro! Como te va?\n",
+    "\n",
+    "Mi nombre es Facundo Lozano! Un gusto conocerte, seré tu revisor en este proyecto.\n",
+    "\n",
+    "A continuación un poco sobre la modalidad de revisión que usaremos:\n",
+    "\n",
+    "Cuando enccuentro un error por primera vez, simplemente lo señalaré, te dejaré encontrarlo y arreglarlo tú cuenta. Además, a lo largo del texto iré haciendo algunas observaciones sobre mejora en tu código y también haré comentarios sobre tus percepciones sobre el tema. Pero si aún no puedes realizar esta tarea, te daré una pista más precisa en la próxima iteración y también algunos ejemplos prácticos. Estaré abierto a comentarios y discusiones sobre el tema.\n",
+    "\n",
+    "Encontrará mis comentarios a continuación: **no los mueva, modifique ni elimine**.\n",
+    "\n",
+    "Puedes encontrar mis comentarios en cuadros verdes, amarillos o rojos como este:\n",
+    "\n",
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor.</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Exito. Todo se ha hecho de forma exitosa.\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"alert alert-block alert-warning\">\n",
+    "<b>Comentario del revisor.</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Observación. Algunas recomendaciones.\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"alert alert-block alert-danger\">\n",
+    "\n",
+    "<b>Comentario del revisor.</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Necesita arreglos. Este apartado necesita algunas correcciones. El trabajo no puede ser aceptado con comentarios rojos. \n",
+    "</div>\n",
+    "\n",
+    "Puedes responder utilizando esto:\n",
+    "\n",
+    "<div class=\"alert alert-block alert-info\">\n",
+    "<b>Respuesta de estudiante.</b> <a class=\"tocSkip\"></a>\n",
+    "</div>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Proyecto Sprint 9 - Clasificación de Planes de Megaline\n",
+    "\n",
+    "**Objetivo**: El objetivo de este proyecto es desarrollar un modelo de clasificación para la compañía móvil Megaline que permita recomendar uno de sus nuevos planes: Smart o Ultra, basado en el comportamiento de los clientes. El modelo deberá alcanzar una precisión de al menos 0.75.\n",
+    "\n",
+    "Utilizaremos datos históricos del comportamiento mensual de los usuarios y emplearemos varios modelos de clasificación para comparar su rendimiento y elegir el más adecuado. El proyecto incluirá la segmentación de los datos, ajuste de hiperparámetros y una prueba de cordura final para asegurar la validez del modelo.\n",
+    "\n",
+    "\n",
+    "\n",
+    "# 0.1 Índice\n",
+    "1. [Cargar y revisar los datos](#1-cargar-y-revisar-los-datos)\n",
+    "2. [Segmentación de los datos](#2-segmentacion-de-los-datos)\n",
+    "3. [Selección y entrenamiento de modelos](#3-seleccion-y-entrenamiento-de-modelos)\n",
+    "    - Modelos a probar: Random Forest, Decision Tree, Logistic Regression\n",
+    "4. [Ajuste de hiperparámetros](#4-ajuste-de-hiperparametros)\n",
+    "5. [Evaluación del modelo](#5-evaluacion-del-modelo)\n",
+    "6. [Prueba de cordura](#6-prueba-de-cordura)\n",
+    "7. [Conclusiones](#7-conclusiones)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Review General. (Iteración 1) </b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Buenas Alejandro! Siempre me tomo este tiempo al inicio de tu proyecto para comentarte mis apreciaciones generales de esta iteración de tu entrega. \n",
+    "\n",
+    "Me gusta comenzar dando la bienvenida al mundo de los datos a los estudiantes, te deseo lo mejor y espero que consigas lograr tus objetivos. Personalmente me gusta brindar el siguiente consejo, \"Está bien equivocarse, es normal y es lo mejor que te puede pasar. Aprendemos de los errores y eso te hará mejor programando ya que podrás descubrir cosas a medida que avances y son estas cosas las que te darán esa experiencia para ser mejor como  Data Scientist\"\n",
+    "\n",
+    "Ahora si yendo a esta notebook. Lo he dicho al final del proyecto pero lo resalto aquí nuevamente Alejandro, tu proyecto está muy bien resuelto, resalta capacidad y comprensión de todas las herramientas, como a la vez esta ordenado y es sencillo de seguir, felictiaciones!\n",
+    "\n",
+    "Este proyecto está en condiciones de ser aprobado! Éxitos dentro de tu camino en el mundo de los datos!\n",
+    "\n",
+    "Saludos Alejandro!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 1. Cargar y revisar los datos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Importar las librerías necesarias\n",
+    "import pandas as pd\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.tree import DecisionTreeClassifier\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "from sklearn.model_selection import GridSearchCV\n",
+    "from sklearn.dummy import DummyClassifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>calls</th>\n",
+       "      <th>minutes</th>\n",
+       "      <th>messages</th>\n",
+       "      <th>mb_used</th>\n",
+       "      <th>is_ultra</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>40.0</td>\n",
+       "      <td>311.90</td>\n",
+       "      <td>83.0</td>\n",
+       "      <td>19915.42</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>85.0</td>\n",
+       "      <td>516.75</td>\n",
+       "      <td>56.0</td>\n",
+       "      <td>22696.96</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>77.0</td>\n",
+       "      <td>467.66</td>\n",
+       "      <td>86.0</td>\n",
+       "      <td>21060.45</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>106.0</td>\n",
+       "      <td>745.53</td>\n",
+       "      <td>81.0</td>\n",
+       "      <td>8437.39</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>66.0</td>\n",
+       "      <td>418.74</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>14502.75</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   calls  minutes  messages   mb_used  is_ultra\n",
+       "0   40.0   311.90      83.0  19915.42         0\n",
+       "1   85.0   516.75      56.0  22696.96         0\n",
+       "2   77.0   467.66      86.0  21060.45         0\n",
+       "3  106.0   745.53      81.0   8437.39         1\n",
+       "4   66.0   418.74       1.0  14502.75         0"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Cargar el archivo CSV\n",
+    "df = pd.read_csv('users_behavior.csv')\n",
+    "\n",
+    "# Verificar los primeros registros para asegurar que los datos se cargaron correctamente\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 3214 entries, 0 to 3213\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column    Non-Null Count  Dtype  \n",
+      "---  ------    --------------  -----  \n",
+      " 0   calls     3214 non-null   float64\n",
+      " 1   minutes   3214 non-null   float64\n",
+      " 2   messages  3214 non-null   float64\n",
+      " 3   mb_used   3214 non-null   float64\n",
+      " 4   is_ultra  3214 non-null   int64  \n",
+      "dtypes: float64(4), int64(1)\n",
+      "memory usage: 125.7 KB\n",
+      "\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "calls       0\n",
+       "minutes     0\n",
+       "messages    0\n",
+       "mb_used     0\n",
+       "is_ultra    0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Verificar información general de los datos (tipos de datos, nulos, etc.)\n",
+    "df.info()\n",
+    "print()\n",
+    "\n",
+    "# Obtener estadísticas descriptivas\n",
+    "df.describe()\n",
+    "\n",
+    "# Verificar si hay valores nulos\n",
+    "df.isnull().sum()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Excelente implementación de importaciones y carga de datos Alejandro, a la vez perfecta utilzización de métodos para la comprensión de la composición de nuestros datos."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 2. Segmentación de los datos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Tamaño de entrenamiento: (1928, 4)\n",
+      "Tamaño de validación: (643, 4)\n",
+      "Tamaño de prueba: (643, 4)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Separar las características (X) y el objetivo (y)\n",
+    "X = df.drop(columns='is_ultra')  # Todas las columnas excepto 'is_ultra'\n",
+    "y = df['is_ultra']  # La columna objetivo\n",
+    "\n",
+    "# Dividir los datos en entrenamiento (60%) y conjunto restante (40%)\n",
+    "X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42)\n",
+    "\n",
+    "# Dividir el conjunto restante en validación (20%) y prueba (20%)\n",
+    "X_valid, X_test, y_valid, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)\n",
+    "\n",
+    "# Imprimir el tamaño de cada conjunto para verificar\n",
+    "print(f\"Tamaño de entrenamiento: {X_train.shape}\")\n",
+    "print(f\"Tamaño de validación: {X_valid.shape}\")\n",
+    "print(f\"Tamaño de prueba: {X_test.shape}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Nuevamente excelente Alejandro! División perfecta de los datos en los 3 conjuntos correspondientes, sigamos!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Los tamaños actuales son:\n",
+    "\n",
+    "- Conjunto de entrenamiento: 1928 registros\n",
+    "- Conjunto de validación: 643 registros\n",
+    "- Conjunto de prueba: 643 registros\n",
+    "\n",
+    "Esto debería ser suficiente para construir y evaluar el modelo correctamente. El siguiente paso es entrenar y seleccionar los modelos."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 3. Selección y entrenamiento de modelos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Precisión de Random Forest: 0.8025\n",
+      "Precisión de Decision Tree: 0.7278\n",
+      "Precisión de Logistic Regression: 0.7403\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Inicializar los modelos\n",
+    "rf_model = RandomForestClassifier(random_state=42)\n",
+    "dt_model = DecisionTreeClassifier(random_state=42)\n",
+    "lr_model = LogisticRegression(random_state=42, max_iter=1000)\n",
+    "\n",
+    "# Entrenar los modelos con el conjunto de entrenamiento\n",
+    "rf_model.fit(X_train, y_train)\n",
+    "dt_model.fit(X_train, y_train)\n",
+    "lr_model.fit(X_train, y_train)\n",
+    "\n",
+    "# Hacer predicciones en el conjunto de validación\n",
+    "rf_pred = rf_model.predict(X_valid)\n",
+    "dt_pred = dt_model.predict(X_valid)\n",
+    "lr_pred = lr_model.predict(X_valid)\n",
+    "\n",
+    "# Evaluar los modelos usando el conjunto de validación\n",
+    "rf_acc = accuracy_score(y_valid, rf_pred)\n",
+    "dt_acc = accuracy_score(y_valid, dt_pred)\n",
+    "lr_acc = accuracy_score(y_valid, lr_pred)\n",
+    "\n",
+    "# Imprimir las precisiones de cada modelo\n",
+    "print(f\"Precisión de Random Forest: {rf_acc:.4f}\")\n",
+    "print(f\"Precisión de Decision Tree: {dt_acc:.4f}\")\n",
+    "print(f\"Precisión de Logistic Regression: {lr_acc:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Excelente declaración de los modelos en su forma básica Alejandro, a la vez perfecto uso de los conjuntos y elección de métricas!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "El modelo de Random Forest está funcionando mejor, superando el umbral de precisión del 75% requerido para el proyecto."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 4. Ajuste de hiperparámetros"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fitting 5 folds for each of 108 candidates, totalling 540 fits\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=None, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.4s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=10, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.4s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=20, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=1, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=   0.2s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=2, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=2, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=5, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=50; total time=   0.1s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.3s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=100; total time=   0.2s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "[CV] END max_depth=30, min_samples_leaf=4, min_samples_split=10, n_estimators=200; total time=   0.5s\n",
+      "Mejores hiperparámetros: {'max_depth': 10, 'min_samples_leaf': 4, 'min_samples_split': 10, 'n_estimators': 200}\n",
+      "Precisión de Random Forest ajustado: 0.8072\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Definir el rango de hiperparámetros a probar\n",
+    "param_grid = {\n",
+    "    'n_estimators': [50, 100, 200],            # Número de árboles\n",
+    "    'max_depth': [None, 10, 20, 30],           # Profundidad máxima de los árboles\n",
+    "    'min_samples_split': [2, 5, 10],           # Mínimo de muestras para dividir un nodo\n",
+    "    'min_samples_leaf': [1, 2, 4]              # Mínimo de muestras para ser una hoja\n",
+    "}\n",
+    "\n",
+    "# Inicializar el modelo Random Forest\n",
+    "rf_model = RandomForestClassifier(random_state=42)\n",
+    "\n",
+    "# Configurar GridSearchCV para encontrar la mejor combinación de hiperparámetros\n",
+    "grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)\n",
+    "\n",
+    "# Entrenar el modelo utilizando GridSearchCV\n",
+    "grid_search.fit(X_train, y_train)\n",
+    "\n",
+    "# Imprimir los mejores hiperparámetros\n",
+    "print(f\"Mejores hiperparámetros: {grid_search.best_params_}\")\n",
+    "\n",
+    "# Evaluar el modelo ajustado en el conjunto de validación\n",
+    "best_rf_model = grid_search.best_estimator_\n",
+    "rf_best_pred = best_rf_model.predict(X_valid)\n",
+    "rf_best_acc = accuracy_score(y_valid, rf_best_pred)\n",
+    "\n",
+    "print(f\"Precisión de Random Forest ajustado: {rf_best_acc:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    " <div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Y tal como era debido perfecta profundización en la busqueda de los mejores hiperparametros para encontrar la mejor combinación posible, excelente uso de GridSearch Alejandro!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 5. Evaluación del modelo"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Precisión del modelo ajustado en el conjunto de prueba: 0.8134\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Hacer predicciones en el conjunto de prueba usando el mejor modelo ajustado\n",
+    "rf_test_pred = best_rf_model.predict(X_test)\n",
+    "\n",
+    "# Evaluar la precisión en el conjunto de prueba\n",
+    "rf_test_acc = accuracy_score(y_test, rf_test_pred)\n",
+    "\n",
+    "print(f\"Precisión del modelo ajustado en el conjunto de prueba: {rf_test_acc:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Y tal como debíamos utilizamos el mejor modelo para evaluar el tercer conjunto de prueba, bien hecho!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 6. Prueba de cordura"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Precisión del modelo base (predicción más frecuente): 0.6967\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Crear un modelo base que siempre predice la clase más frecuente\n",
+    "dummy_clf = DummyClassifier(strategy=\"most_frequent\")\n",
+    "dummy_clf.fit(X_train, y_train)\n",
+    "\n",
+    "# Hacer predicciones en el conjunto de prueba usando el modelo base\n",
+    "dummy_pred = dummy_clf.predict(X_test)\n",
+    "\n",
+    "# Evaluar la precisión del modelo base\n",
+    "dummy_acc = accuracy_score(y_test, dummy_pred)\n",
+    "\n",
+    "print(f\"Precisión del modelo base (predicción más frecuente): {dummy_acc:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "\n",
+    "<b>Comentario del revisor. (Iteración 1)\n",
+    "    \n",
+    "</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "    \n",
+    "Y un agregado final perfecto que nos permite saber la viabilidad de entrenar nuestro modelo más complejo, felicitaciones!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 7. Conclusiones\n",
+    "\n",
+    "El modelo de Random Forest ajustado ha demostrado ser efectivo para la clasificación de los clientes entre los planes \"Smart\" y \"Ultra\", alcanzando una precisión del 81.34% en el conjunto de prueba. El ajuste de hiperparámetros ha mejorado el rendimiento, superando significativamente al modelo base que predice la clase más frecuente. \n",
+    "\n",
+    "El modelo está listo para su uso en la recomendación de planes móviles, asegurando una clasificación precisa basada en el comportamiento del cliente."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "ExecuteTimeLog": [
+   {
+    "duration": 316,
+    "start_time": "2024-09-20T00:58:46.550Z"
+   },
+   {
+    "duration": 513,
+    "start_time": "2024-09-20T00:58:55.874Z"
+   },
+   {
+    "duration": 58,
+    "start_time": "2024-09-20T00:59:03.402Z"
+   },
+   {
+    "duration": 3,
+    "start_time": "2024-09-20T00:59:06.043Z"
+   },
+   {
+    "duration": 57,
+    "start_time": "2024-09-20T00:59:08.647Z"
+   },
+   {
+    "duration": 57,
+    "start_time": "2024-09-20T01:05:14.864Z"
+   },
+   {
+    "duration": 64,
+    "start_time": "2024-09-20T01:05:18.149Z"
+   },
+   {
+    "duration": 17,
+    "start_time": "2024-09-20T01:14:21.561Z"
+   },
+   {
+    "duration": 20,
+    "start_time": "2024-09-20T01:16:53.670Z"
+   },
+   {
+    "duration": 279,
+    "start_time": "2024-09-20T01:18:12.419Z"
+   },
+   {
+    "duration": 16,
+    "start_time": "2024-09-20T01:18:12.700Z"
+   },
+   {
+    "duration": 20,
+    "start_time": "2024-09-20T01:18:12.724Z"
+   },
+   {
+    "duration": 798,
+    "start_time": "2024-09-20T01:24:29.543Z"
+   },
+   {
+    "duration": 16,
+    "start_time": "2024-09-20T01:24:30.343Z"
+   },
+   {
+    "duration": 19,
+    "start_time": "2024-09-20T01:24:30.360Z"
+   },
+   {
+    "duration": 7,
+    "start_time": "2024-09-20T01:24:30.381Z"
+   },
+   {
+    "duration": 796,
+    "start_time": "2024-09-20T01:27:26.241Z"
+   },
+   {
+    "duration": 16,
+    "start_time": "2024-09-20T01:27:27.039Z"
+   },
+   {
+    "duration": 19,
+    "start_time": "2024-09-20T01:27:27.057Z"
+   },
+   {
+    "duration": 7,
+    "start_time": "2024-09-20T01:27:27.078Z"
+   },
+   {
+    "duration": 383,
+    "start_time": "2024-09-20T01:27:27.087Z"
+   },
+   {
+    "duration": 215,
+    "start_time": "2024-09-20T01:30:04.051Z"
+   },
+   {
+    "duration": 773,
+    "start_time": "2024-09-20T01:30:12.768Z"
+   },
+   {
+    "duration": 15,
+    "start_time": "2024-09-20T01:30:13.543Z"
+   },
+   {
+    "duration": 19,
+    "start_time": "2024-09-20T01:30:13.560Z"
+   },
+   {
+    "duration": 7,
+    "start_time": "2024-09-20T01:30:13.580Z"
+   },
+   {
+    "duration": 387,
+    "start_time": "2024-09-20T01:30:13.589Z"
+   },
+   {
+    "duration": 151417,
+    "start_time": "2024-09-20T01:30:13.978Z"
+   },
+   {
+    "duration": 21,
+    "start_time": "2024-09-20T01:36:10.612Z"
+   },
+   {
+    "duration": 274,
+    "start_time": "2024-09-20T01:38:03.175Z"
+   },
+   {
+    "duration": 805,
+    "start_time": "2024-09-20T01:38:09.527Z"
+   },
+   {
+    "duration": 16,
+    "start_time": "2024-09-20T01:38:10.334Z"
+   },
+   {
+    "duration": 19,
+    "start_time": "2024-09-20T01:38:10.351Z"
+   },
+   {
+    "duration": 7,
+    "start_time": "2024-09-20T01:38:10.372Z"
+   },
+   {
+    "duration": 381,
+    "start_time": "2024-09-20T01:38:10.380Z"
+   },
+   {
+    "duration": 150543,
+    "start_time": "2024-09-20T01:38:10.763Z"
+   },
+   {
+    "duration": 25,
+    "start_time": "2024-09-20T01:40:41.308Z"
+   },
+   {
+    "duration": 6,
+    "start_time": "2024-09-20T01:40:41.334Z"
+   }
+  ],
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.19"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": true,
+   "sideBar": true,
+   "skip_h1_title": true,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": true,
+   "toc_window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

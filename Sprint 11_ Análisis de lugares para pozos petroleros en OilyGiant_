@@ -1,0 +1,815 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "¡Hola!<br />\n",
+    "Soy **Francisco Cortés**, estoy contento de revisar tu proyecto y ser parte de tu proceso de aprendizaje.\n",
+    "A lo largo del texto, haré algunas observaciones sobre mejoras en el código y también haré comentarios sobre tus percepciones sobre el tema. Si existe algún error en el código, no te preocupes, estoy aquí para ayudarte a mejorarlo, en la primera iteración te lo señalaré para que tengas la oportunidad de corregirlo, pero si aún no encuentras una solución para esta tarea, te daré una pista más precisa en la próxima iteración y también algunos ejemplos prácticos. Estaré abierto a retroalimentación y discusiones sobre el tema.<br />\n",
+    "Encontrarás mis comentarios a continuación - **por favor no los muevas, modifiques o borres**.\n",
+    "Revisaré cuidadosamente tu código para comprobar que se han cumplido con los requisitos y te proporcionaré mis comentarios en cajas verdes, amarillas o rojas como esta:\n",
+    "\n",
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Si la ejecución fue perfecta succesfully.\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"alert alert-block alert-warning\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Si existe alguna recomendación para que tu código mejore.\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"alert alert-block alert-danger\">\n",
+    "\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a>\n",
+    "\n",
+    "Si existen correcciones necesarias para cumplir con los requisitos. El trabajo no puede ser aceptado si hay alguna caja roja.\n",
+    "</div>\n",
+    "\n",
+    "Puedes responderme de la siguiente manera:\n",
+    "\n",
+    "<div class=\"alert alert-block alert-info\">\n",
+    "<b>Respuesta del estudiante.</b> <a class=\"tocSkip\"></a>\n",
+    "</div>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Proyecto: Selección de Regiones para Nuevos Pozos Petrolíferos en OilyGiant\n",
+    "\n",
+    "# Introducción\n",
+    "\n",
+    "OilyGiant es una empresa de extracción de petróleo en búsqueda de las mejores ubicaciones para abrir 200 nuevos pozos petrolíferos. Para seleccionar las mejores regiones, utilizaremos un modelo de regresión lineal para predecir el volumen de reservas de petróleo. Además, analizaremos los riesgos y ganancias potenciales mediante la técnica de bootstrapping. El objetivo es encontrar la región que maximice las ganancias y minimice los riesgos de pérdida.\n",
+    "\n",
+    "Este proyecto incluye el análisis de datos de tres regiones diferentes. Utilizaremos la información sobre características geológicas y volúmenes de reservas para desarrollar nuestro modelo.\n",
+    "\n",
+    "# Objetivo\n",
+    "\n",
+    "El objetivo de este proyecto es:\n",
+    "- Entrenar un modelo de regresión lineal para predecir el volumen de reservas de petróleo en tres regiones.\n",
+    "- Seleccionar los mejores 200 pozos petrolíferos por región basándonos en las predicciones del modelo.\n",
+    "- Analizar las ganancias y riesgos asociados a cada región utilizando bootstrapping y recomendar la mejor opción para la empresa.\n",
+    "\n",
+    "# Índice\n",
+    "\n",
+    "1. Carga y Exploración de los Datos\n",
+    "2. Preparación de los Datos\n",
+    "3. Entrenamiento del Modelo\n",
+    "4. Evaluación del Modelo\n",
+    "5. Cálculo de Ganancias\n",
+    "6. Análisis de Riesgos y Bootstrapping\n",
+    "7. Conclusiones"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##  Carga y Exploración de los Datos\n",
+    "\n",
+    "En esta sección, cargaremos los datos de las tres regiones y exploraremos su estructura para entender qué tipo de información contienen. Analizaremos las primeras filas y verificaremos la información general de cada conjunto de datos."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Importamos las librerías necesarias\n",
+    "import pandas as pd\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.linear_model import LinearRegression\n",
+    "from sklearn.metrics import mean_squared_error\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Cargamos los datos de las tres regiones\n",
+    "\n",
+    "# Código original\n",
+    "'''\n",
+    "geo_data_0 = pd.read_csv('geo_data_0.csv')\n",
+    "geo_data_1 = pd.read_csv('geo_data_1.csv')\n",
+    "geo_data_2 = pd.read_csv('geo_data_2.csv')\n",
+    "'''\n",
+    "\n",
+    "# Código del revisor\n",
+    "geo_data_0 = pd.read_csv('/datasets/geo_data_0.csv')\n",
+    "geo_data_1 = pd.read_csv('/datasets/geo_data_1.csv')\n",
+    "geo_data_2 = pd.read_csv('/datasets/geo_data_2.csv')\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-warning\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Cuidado!<br/>\n",
+    "No se estaban leyendo los datasets correctamente, te he ayudado a corregirlos\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Datos de la Región 0\n",
+      "      id        f0        f1        f2     product\n",
+      "0  txEyH  0.705745 -0.497823  1.221170  105.280062\n",
+      "1  2acmU  1.334711 -0.340164  4.365080   73.037750\n",
+      "2  409Wp  1.022732  0.151990  1.419926   85.265647\n",
+      "3  iJLyR -0.032172  0.139033  2.978566  168.620776\n",
+      "4  Xdl7t  1.988431  0.155413  4.751769  154.036647 \n",
+      "\n",
+      "Datos de la Región 1\n",
+      "      id         f0         f1        f2     product\n",
+      "0  kBEdx -15.001348  -8.276000 -0.005876    3.179103\n",
+      "1  62mP7  14.272088  -3.475083  0.999183   26.953261\n",
+      "2  vyE1P   6.263187  -5.948386  5.001160  134.766305\n",
+      "3  KcrkZ -13.081196 -11.506057  4.999415  137.945408\n",
+      "4  AHL4O  12.702195  -8.147433  5.004363  134.766305 \n",
+      "\n",
+      "Datos de la Región 2\n",
+      "      id        f0        f1        f2     product\n",
+      "0  fwXo0 -1.146987  0.963328 -0.828965   27.758673\n",
+      "1  WJtFt  0.262778  0.269839 -2.530187   56.069697\n",
+      "2  ovLUW  0.194587  0.289035 -5.586433   62.871910\n",
+      "3  q6cA6  2.236060 -0.553760  0.930038  114.572842\n",
+      "4  WPMUX -0.515993  1.716266  5.899011  149.600746 \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Exploramos las primeras filas de cada dataset\n",
+    "print(\"Datos de la Región 0\")\n",
+    "print(geo_data_0.head(), \"\\n\")\n",
+    "\n",
+    "print(\"Datos de la Región 1\")\n",
+    "print(geo_data_1.head(), \"\\n\")\n",
+    "\n",
+    "print(\"Datos de la Región 2\")\n",
+    "print(geo_data_2.head(), \"\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Correcto, buena manera de hacer una revisión inicial de los datos\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Información General de los Datos\n",
+    "\n",
+    "A continuación, revisaremos la información general de cada conjunto de datos para verificar el tipo de variables y la cantidad de valores faltantes o inconsistentes que podamos encontrar."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Información de la Región 0\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 100000 entries, 0 to 99999\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column   Non-Null Count   Dtype  \n",
+      "---  ------   --------------   -----  \n",
+      " 0   id       100000 non-null  object \n",
+      " 1   f0       100000 non-null  float64\n",
+      " 2   f1       100000 non-null  float64\n",
+      " 3   f2       100000 non-null  float64\n",
+      " 4   product  100000 non-null  float64\n",
+      "dtypes: float64(4), object(1)\n",
+      "memory usage: 3.8+ MB\n",
+      "None \n",
+      "\n",
+      "Información de la Región 1\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 100000 entries, 0 to 99999\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column   Non-Null Count   Dtype  \n",
+      "---  ------   --------------   -----  \n",
+      " 0   id       100000 non-null  object \n",
+      " 1   f0       100000 non-null  float64\n",
+      " 2   f1       100000 non-null  float64\n",
+      " 3   f2       100000 non-null  float64\n",
+      " 4   product  100000 non-null  float64\n",
+      "dtypes: float64(4), object(1)\n",
+      "memory usage: 3.8+ MB\n",
+      "None \n",
+      "\n",
+      "Información de la Región 2\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 100000 entries, 0 to 99999\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column   Non-Null Count   Dtype  \n",
+      "---  ------   --------------   -----  \n",
+      " 0   id       100000 non-null  object \n",
+      " 1   f0       100000 non-null  float64\n",
+      " 2   f1       100000 non-null  float64\n",
+      " 3   f2       100000 non-null  float64\n",
+      " 4   product  100000 non-null  float64\n",
+      "dtypes: float64(4), object(1)\n",
+      "memory usage: 3.8+ MB\n",
+      "None \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Información general de los datasets\n",
+    "print(\"Información de la Región 0\")\n",
+    "print(geo_data_0.info(), \"\\n\")\n",
+    "\n",
+    "print(\"Información de la Región 1\")\n",
+    "print(geo_data_1.info(), \"\\n\")\n",
+    "\n",
+    "print(\"Información de la Región 2\")\n",
+    "print(geo_data_2.info(), \"\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##  Preparación de los Datos\n",
+    "\n",
+    "En esta sección, dividiremos los datos en conjuntos de entrenamiento y validación para cada región en una proporción de 75:25. Esto nos permitirá entrenar un modelo de regresión lineal y evaluar su rendimiento en el conjunto de validación."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Tamaño de los datos de la Región 0 - Entrenamiento: (75000, 5)\n",
+      "Tamaño de los datos de la Región 0 - Validación: (25000, 5) \n",
+      "\n",
+      "Tamaño de los datos de la Región 1 - Entrenamiento: (75000, 5)\n",
+      "Tamaño de los datos de la Región 1 - Validación: (25000, 5) \n",
+      "\n",
+      "Tamaño de los datos de la Región 2 - Entrenamiento: (75000, 5)\n",
+      "Tamaño de los datos de la Región 2 - Validación: (25000, 5) \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# División de los datos en entrenamiento y validación (75% para entrenamiento y 25% para validación)\n",
+    "geo_data_0_train, geo_data_0_valid = train_test_split(geo_data_0, test_size=0.25, random_state=42)\n",
+    "geo_data_1_train, geo_data_1_valid = train_test_split(geo_data_1, test_size=0.25, random_state=42)\n",
+    "geo_data_2_train, geo_data_2_valid = train_test_split(geo_data_2, test_size=0.25, random_state=42)\n",
+    "\n",
+    "# Verificamos el tamaño de los conjuntos divididos\n",
+    "print(\"Tamaño de los datos de la Región 0 - Entrenamiento:\", geo_data_0_train.shape)\n",
+    "print(\"Tamaño de los datos de la Región 0 - Validación:\", geo_data_0_valid.shape, \"\\n\")\n",
+    "\n",
+    "print(\"Tamaño de los datos de la Región 1 - Entrenamiento:\", geo_data_1_train.shape)\n",
+    "print(\"Tamaño de los datos de la Región 1 - Validación:\", geo_data_1_valid.shape, \"\\n\")\n",
+    "\n",
+    "print(\"Tamaño de los datos de la Región 2 - Entrenamiento:\", geo_data_2_train.shape)\n",
+    "print(\"Tamaño de los datos de la Región 2 - Validación:\", geo_data_2_valid.shape, \"\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Correcto, buena manera de repartir una proporción de 25% para la validación y 75% para el entrenamiento, además buena manera de fijar el random state\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##  Entrenamiento del Modelo\n",
+    "\n",
+    "En esta sección, entrenaremos un modelo de regresión lineal para predecir el volumen de reservas de petróleo. Utilizaremos los datos de entrenamiento de cada región y evaluaremos el modelo con el conjunto de validación para medir su precisión."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Región 0 - Volumen promedio de reservas predicho: 92.40\n",
+      "Región 0 - RMSE del modelo: 37.76\n",
+      "\n",
+      "Región 1 - Volumen promedio de reservas predicho: 68.71\n",
+      "Región 1 - RMSE del modelo: 0.89\n",
+      "\n",
+      "Región 2 - Volumen promedio de reservas predicho: 94.77\n",
+      "Región 2 - RMSE del modelo: 40.15\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Entrenamiento de un modelo de regresión lineal para la Región 0\n",
+    "X_train_0 = geo_data_0_train[['f0', 'f1', 'f2']]\n",
+    "y_train_0 = geo_data_0_train['product']\n",
+    "X_valid_0 = geo_data_0_valid[['f0', 'f1', 'f2']]\n",
+    "y_valid_0 = geo_data_0_valid['product']\n",
+    "\n",
+    "model_0 = LinearRegression()\n",
+    "model_0.fit(X_train_0, y_train_0)\n",
+    "\n",
+    "# Predicciones para el conjunto de validación\n",
+    "predictions_0 = model_0.predict(X_valid_0)\n",
+    "\n",
+    "# Cálculo del RMSE\n",
+    "rmse_0 = mean_squared_error(y_valid_0, predictions_0, squared=False)\n",
+    "mean_reserves_0 = predictions_0.mean()\n",
+    "\n",
+    "print(f\"Región 0 - Volumen promedio de reservas predicho: {mean_reserves_0:.2f}\")\n",
+    "print(f\"Región 0 - RMSE del modelo: {rmse_0:.2f}\\n\")\n",
+    "\n",
+    "# Repetimos el proceso para las Regiones 1 y 2\n",
+    "# Región 1\n",
+    "X_train_1 = geo_data_1_train[['f0', 'f1', 'f2']]\n",
+    "y_train_1 = geo_data_1_train['product']\n",
+    "X_valid_1 = geo_data_1_valid[['f0', 'f1', 'f2']]\n",
+    "y_valid_1 = geo_data_1_valid['product']\n",
+    "\n",
+    "model_1 = LinearRegression()\n",
+    "model_1.fit(X_train_1, y_train_1)\n",
+    "\n",
+    "predictions_1 = model_1.predict(X_valid_1)\n",
+    "rmse_1 = mean_squared_error(y_valid_1, predictions_1, squared=False)\n",
+    "mean_reserves_1 = predictions_1.mean()\n",
+    "\n",
+    "print(f\"Región 1 - Volumen promedio de reservas predicho: {mean_reserves_1:.2f}\")\n",
+    "print(f\"Región 1 - RMSE del modelo: {rmse_1:.2f}\\n\")\n",
+    "\n",
+    "# Región 2\n",
+    "X_train_2 = geo_data_2_train[['f0', 'f1', 'f2']]\n",
+    "y_train_2 = geo_data_2_train['product']\n",
+    "X_valid_2 = geo_data_2_valid[['f0', 'f1', 'f2']]\n",
+    "y_valid_2 = geo_data_2_valid['product']\n",
+    "\n",
+    "model_2 = LinearRegression()\n",
+    "model_2.fit(X_train_2, y_train_2)\n",
+    "\n",
+    "predictions_2 = model_2.predict(X_valid_2)\n",
+    "rmse_2 = mean_squared_error(y_valid_2, predictions_2, squared=False)\n",
+    "mean_reserves_2 = predictions_2.mean()\n",
+    "\n",
+    "print(f\"Región 2 - Volumen promedio de reservas predicho: {mean_reserves_2:.2f}\")\n",
+    "print(f\"Región 2 - RMSE del modelo: {rmse_2:.2f}\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Bien hecho, los valores encontrados son correctos, se puede ver que la región 1 a pesar de tener bajo en cuanto a las predicciones es el que a su vez menor error tiene\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Cálculo de Ganancias\n",
+    "\n",
+    "En esta sección, seleccionaremos los 200 pozos con los valores de predicción más altos en cada región. Utilizaremos estos pozos para calcular las ganancias esperadas, teniendo en cuenta las condiciones del negocio."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Ganancia estimada para la Región 0: $138966584.80\n",
+      "Ganancia estimada para la Región 1: $124869381.15\n",
+      "Ganancia estimada para la Región 2: $133779815.14\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Definimos una función para calcular la ganancia\n",
+    "def calcular_ganancia(predicciones):\n",
+    "    # Seleccionamos las 200 mejores predicciones\n",
+    "    mejores_pozos = predicciones.sort_values(ascending=False)[:200]\n",
+    "    # Calculamos las ganancias\n",
+    "    ganancia = mejores_pozos.sum() * 4500  # 4500 dólares por cada unidad de reservas\n",
+    "    return ganancia\n",
+    "\n",
+    "# Cálculo de ganancias para la Región 0\n",
+    "ganancia_0 = calcular_ganancia(pd.Series(predictions_0))\n",
+    "print(f\"Ganancia estimada para la Región 0: ${ganancia_0:.2f}\")\n",
+    "\n",
+    "# Cálculo de ganancias para la Región 1\n",
+    "ganancia_1 = calcular_ganancia(pd.Series(predictions_1))\n",
+    "print(f\"Ganancia estimada para la Región 1: ${ganancia_1:.2f}\")\n",
+    "\n",
+    "# Cálculo de ganancias para la Región 2\n",
+    "ganancia_2 = calcular_ganancia(pd.Series(predictions_2))\n",
+    "print(f\"Ganancia estimada para la Región 2: ${ganancia_2:.2f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Correcto, buena manera de calcular las ganancias por cada región. <br/>\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Análisis de Riesgos y Bootstrapping\n",
+    "\n",
+    "En esta sección, utilizaremos la técnica de bootstrapping para estimar la distribución de ganancias de cada región. Calcularemos el beneficio promedio, el intervalo de confianza del 95% y el riesgo de pérdidas (probabilidad de ganancia negativa)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Región 0 - Beneficio promedio: $103292216.93, Intervalo de confianza 95%: [1.01212345e+08 1.05519084e+08], Riesgo de pérdida: 0.20%\n",
+      "Región 1 - Beneficio promedio: $104302078.62, Intervalo de confianza 95%: [1.00291532e+08 1.08355816e+08], Riesgo de pérdida: 2.20%\n",
+      "Región 2 - Beneficio promedio: $102693154.55, Intervalo de confianza 95%: [1.00851644e+08 1.04500787e+08], Riesgo de pérdida: 0.30%\n"
+     ]
+    }
+   ],
+   "source": [
+    "def bootstrap_riesgos(predicciones, n_simulaciones=1000):\n",
+    "    valores = []\n",
+    "    for _ in range(n_simulaciones):\n",
+    "        muestra = predicciones.sample(n=500, replace=True)  # Tomamos una muestra aleatoria de 500 pozos\n",
+    "        ganancia_muestra = calcular_ganancia(muestra)  # Calculamos la ganancia\n",
+    "        valores.append(ganancia_muestra)\n",
+    "    \n",
+    "    valores = pd.Series(valores)\n",
+    "    \n",
+    "    # Calculamos el intervalo de confianza del 95%\n",
+    "    intervalo_confianza = np.percentile(valores, [2.5, 97.5])\n",
+    "    \n",
+    "    # Calculamos el riesgo de pérdida (porcentaje de muestras con ganancias negativas)\n",
+    "    riesgo_perdida = (valores < 100_000_000).mean() * 100  # 100 millones es el presupuesto\n",
+    "    \n",
+    "    return valores.mean(), intervalo_confianza, riesgo_perdida\n",
+    "\n",
+    "# Realizamos el bootstrapping para cada región\n",
+    "media_0, intervalo_0, riesgo_0 = bootstrap_riesgos(pd.Series(predictions_0))\n",
+    "media_1, intervalo_1, riesgo_1 = bootstrap_riesgos(pd.Series(predictions_1))\n",
+    "media_2, intervalo_2, riesgo_2 = bootstrap_riesgos(pd.Series(predictions_2))\n",
+    "\n",
+    "# Mostramos los resultados\n",
+    "print(f\"Región 0 - Beneficio promedio: ${media_0:.2f}, Intervalo de confianza 95%: {intervalo_0}, Riesgo de pérdida: {riesgo_0:.2f}%\")\n",
+    "print(f\"Región 1 - Beneficio promedio: ${media_1:.2f}, Intervalo de confianza 95%: {intervalo_1}, Riesgo de pérdida: {riesgo_1:.2f}%\")\n",
+    "print(f\"Región 2 - Beneficio promedio: ${media_2:.2f}, Intervalo de confianza 95%: {intervalo_2}, Riesgo de pérdida: {riesgo_2:.2f}%\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Bien hecho, los valores de los beneficios encontrados nos dan muchas pistas sobre la decisión que podemos tomar en el futuro, los aspectos del negocio es donde entran en juego en esta parte, cuanto riesgo de perdida esta dispuesta a tomar la compañia? valdra la pena arriesgarse más por obtener un poco más de beneficio?\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##  Conclusiones\n",
+    "\n",
+    "Después de analizar los datos de las tres regiones, entrenar los modelos de regresión lineal y evaluar los beneficios y riesgos utilizando la técnica de bootstrapping, llegamos a las siguientes conclusiones:\n",
+    "\n",
+    "1. **Región 0**:\n",
+    "   - Beneficio promedio estimado: $103,356,406.49\n",
+    "   - Intervalo de confianza del 95%: [101,148,855, 105,567,245]\n",
+    "   - Riesgo de pérdida: 0.10%\n",
+    "   \n",
+    "2. **Región 1**:\n",
+    "   - Beneficio promedio estimado: $104,394,216.11\n",
+    "   - Intervalo de confianza del 95%: [100,397,664, 108,160,966]\n",
+    "   - Riesgo de pérdida: 1.80%\n",
+    "\n",
+    "3. **Región 2**:\n",
+    "   - Beneficio promedio estimado: $102,744,337.63\n",
+    "   - Intervalo de confianza del 95%: [100,823,208, 104,720,806]\n",
+    "   - Riesgo de pérdida: 0.10%\n",
+    "\n",
+    "### Recomendación Final\n",
+    "\n",
+    "- La **Región 0** presenta un buen equilibrio entre beneficio y bajo riesgo. Con un riesgo de pérdida del 0.10% y un beneficio promedio alto, es una opción sólida para el desarrollo de pozos petrolíferos.\n",
+    "- La **Región 1**, aunque ofrece un mayor beneficio promedio, conlleva un mayor riesgo (1.80% de pérdida). Si la empresa está dispuesta a asumir más riesgos, podría considerar esta región.\n",
+    "- La **Región 2** también es una opción conservadora con un bajo riesgo de pérdida (0.10%) y un beneficio promedio similar al de la Región 0.\n",
+    "\n",
+    "En resumen, mi recomendación es desarrollar los nuevos pozos en la **Región 0** debido a su bajo riesgo y buen rendimiento promedio."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-block alert-success\">\n",
+    "<b>Comentario del revisor</b> <a class=\"tocSkip\"></a><br />\n",
+    "Has realizado un buen trabajo, me doy cuenta de que has aplicado los conocimientos que has adquirido durante el curso y los procedimientos realizados son correctos, SQL es una gran herramienta que nos ayuda en muchos casos y es bastante útil en proyectos reales.<br/>\n",
+    "    \n",
+    "El documento que entregas es organizado y fácil de entender.<br/>\n",
+    "\n",
+    "Este tipo de analisis nos ayuda a confirmar suposiciones o apoyar decisiones de negocio las cuales muchas veces entre más puntos de vista se analisen mejores resultados se obtendrán al final.\n",
+    "Continúa con el buen trabajo y mucho éxito en el siguiente Sprint!\n",
+    "</div>\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "ExecuteTimeLog": [
+   {
+    "duration": 308,
+    "start_time": "2024-10-15T02:59:49.679Z"
+   },
+   {
+    "duration": 586,
+    "start_time": "2024-10-15T03:10:15.324Z"
+   },
+   {
+    "duration": 301,
+    "start_time": "2024-10-15T03:10:25.697Z"
+   },
+   {
+    "duration": 520,
+    "start_time": "2024-10-15T03:10:26.000Z"
+   },
+   {
+    "duration": 62,
+    "start_time": "2024-10-15T03:10:47.259Z"
+   },
+   {
+    "duration": 302,
+    "start_time": "2024-10-15T03:11:38.612Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T03:12:35.049Z"
+   },
+   {
+    "duration": 26,
+    "start_time": "2024-10-15T03:13:38.331Z"
+   },
+   {
+    "duration": 15,
+    "start_time": "2024-10-15T03:57:34.615Z"
+   },
+   {
+    "duration": 801,
+    "start_time": "2024-10-15T03:57:41.043Z"
+   },
+   {
+    "duration": 214,
+    "start_time": "2024-10-15T03:57:41.846Z"
+   },
+   {
+    "duration": 11,
+    "start_time": "2024-10-15T03:57:42.062Z"
+   },
+   {
+    "duration": 25,
+    "start_time": "2024-10-15T03:57:42.075Z"
+   },
+   {
+    "duration": 53,
+    "start_time": "2024-10-15T03:57:42.102Z"
+   },
+   {
+    "duration": 231,
+    "start_time": "2024-10-15T04:40:49.185Z"
+   },
+   {
+    "duration": 805,
+    "start_time": "2024-10-15T04:40:57.251Z"
+   },
+   {
+    "duration": 229,
+    "start_time": "2024-10-15T04:40:58.059Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T04:40:58.290Z"
+   },
+   {
+    "duration": 25,
+    "start_time": "2024-10-15T04:40:58.304Z"
+   },
+   {
+    "duration": 37,
+    "start_time": "2024-10-15T04:40:58.342Z"
+   },
+   {
+    "duration": 75,
+    "start_time": "2024-10-15T04:40:58.381Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T05:52:54.326Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T07:29:49.564Z"
+   },
+   {
+    "duration": 799,
+    "start_time": "2024-10-15T07:31:06.450Z"
+   },
+   {
+    "duration": 238,
+    "start_time": "2024-10-15T07:31:07.252Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T07:31:07.492Z"
+   },
+   {
+    "duration": 39,
+    "start_time": "2024-10-15T07:31:07.506Z"
+   },
+   {
+    "duration": 40,
+    "start_time": "2024-10-15T07:31:07.548Z"
+   },
+   {
+    "duration": 73,
+    "start_time": "2024-10-15T07:31:07.590Z"
+   },
+   {
+    "duration": 87,
+    "start_time": "2024-10-15T07:31:07.665Z"
+   },
+   {
+    "duration": 863,
+    "start_time": "2024-10-15T07:31:07.754Z"
+   },
+   {
+    "duration": 739,
+    "start_time": "2024-10-15T07:33:29.409Z"
+   },
+   {
+    "duration": 223,
+    "start_time": "2024-10-15T07:33:30.151Z"
+   },
+   {
+    "duration": 12,
+    "start_time": "2024-10-15T07:33:30.376Z"
+   },
+   {
+    "duration": 26,
+    "start_time": "2024-10-15T07:33:30.389Z"
+   },
+   {
+    "duration": 52,
+    "start_time": "2024-10-15T07:33:30.418Z"
+   },
+   {
+    "duration": 101,
+    "start_time": "2024-10-15T07:33:30.472Z"
+   },
+   {
+    "duration": 80,
+    "start_time": "2024-10-15T07:33:30.575Z"
+   },
+   {
+    "duration": 882,
+    "start_time": "2024-10-15T07:33:30.657Z"
+   },
+   {
+    "duration": 895,
+    "start_time": "2024-10-15T23:28:14.110Z"
+   },
+   {
+    "duration": 613,
+    "start_time": "2024-10-15T23:28:16.132Z"
+   },
+   {
+    "duration": 4,
+    "start_time": "2024-10-15T23:28:25.584Z"
+   },
+   {
+    "duration": 351,
+    "start_time": "2024-10-15T23:32:13.801Z"
+   },
+   {
+    "duration": 10,
+    "start_time": "2024-10-15T23:32:55.662Z"
+   },
+   {
+    "duration": 39,
+    "start_time": "2024-10-15T23:33:54.080Z"
+   },
+   {
+    "duration": 36,
+    "start_time": "2024-10-15T23:40:05.698Z"
+   },
+   {
+    "duration": 71,
+    "start_time": "2024-10-15T23:40:13.943Z"
+   },
+   {
+    "duration": 13,
+    "start_time": "2024-10-15T23:40:19.099Z"
+   },
+   {
+    "duration": 819,
+    "start_time": "2024-10-15T23:40:21.828Z"
+   },
+   {
+    "duration": 6,
+    "start_time": "2024-10-15T23:48:25.339Z"
+   }
+  ],
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.19"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": true,
+   "sideBar": true,
+   "skip_h1_title": true,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": true,
+   "toc_window_display": false
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
